@@ -1,10 +1,14 @@
-from django.urls import path
-from user.views import CreateUserView, CreateTokenView, ManageUserView
+from django.urls import include, path
+from rest_framework.routers import DefaultRouter
 
-app_name = "user"
+from .views import MovieViewSet
+
+router = DefaultRouter()
+
+router.register("movies", MovieViewSet, basename="movie")
+
+app_name = "cinema"
 
 urlpatterns = [
-    path("register/", CreateUserView.as_view(), name="create"),
-    path("login/", CreateTokenView.as_view(), name="login"),
-    path("me/", ManageUserView.as_view(), name="manage"),
+    path("", include(router.urls)),
 ]
