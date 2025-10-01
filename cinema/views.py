@@ -1,3 +1,5 @@
+# cinema/views.py
+
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
@@ -63,7 +65,39 @@ class OrderPagination(PageNumberPagination):
     max_page_size = 100
 
 
-@extend_schema(tags=["Movies"], summary="Operações com filmes")
+@extend_schema(
+    tags=["Movies"],
+    summary="Operações com filmes",
+    parameters=[
+        OpenApiParameter(
+            name="title",
+            description="Filtro por título (case-insensitive, busca parcial).",
+            required=False,
+            type=str,
+            location=OpenApiParameter.QUERY,
+        ),
+        OpenApiParameter(
+            name="genres",
+            description=(
+                "Filtro por IDs de gêneros, separados por vírgula. "
+                "Ex.: ?genres=1,2,5"
+            ),
+            required=False,
+            type=str,
+            location=OpenApiParameter.QUERY,
+        ),
+        OpenApiParameter(
+            name="actors",
+            description=(
+                "Filtro por IDs de atores, separados por vírgula. "
+                "Ex.: ?actors=3,7"
+            ),
+            required=False,
+            type=str,
+            location=OpenApiParameter.QUERY,
+        ),
+    ],
+)
 class MovieViewSet(viewsets.ModelViewSet):
     queryset = Movie.objects.prefetch_related("genres", "actors")
     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
@@ -88,9 +122,7 @@ class MovieViewSet(viewsets.ModelViewSet):
         if genres:
             try:
                 genre_ids = [
-                    int(gid)
-                    for gid in genres.split(",")
-                    if gid.strip()
+                    int(gid) for gid in genres.split(",") if gid.strip()
                 ]
                 queryset = queryset.filter(genres__id__in=genre_ids)
             except ValueError:
@@ -99,9 +131,7 @@ class MovieViewSet(viewsets.ModelViewSet):
         if actors:
             try:
                 actor_ids = [
-                    int(aid)
-                    for aid in actors.split(",")
-                    if aid.strip()
+                    int(aid) for aid in actors.split(",") if aid.strip()
                 ]
                 queryset = queryset.filter(actors__id__in=actor_ids)
             except ValueError:
@@ -130,7 +160,7 @@ class MovieViewSet(viewsets.ModelViewSet):
     parameters=[
         OpenApiParameter(
             name="date",
-            description="Filtrar por data no formato YYYY-MM-DD",
+            description="Filtrar por data no formato YYYY-MM-DD.",
             required=False,
             type=str,
             location=OpenApiParameter.QUERY,
@@ -138,7 +168,8 @@ class MovieViewSet(viewsets.ModelViewSet):
         OpenApiParameter(
             name="movie",
             description=(
-                "Filtrar id do filme (suporta múltiplos separados por vírgula)"
+                "Filtrar por id do filme (suporta múltiplos separados por "
+                "vírgula). Ex.: ?movie=1,2"
             ),
             required=False,
             type=str,
@@ -194,9 +225,7 @@ class OrderViewSet(
 
     def get_serializer_class(self):
         return (
-            OrderListSerializer
-            if self.action == "list"
-            else OrderSerializer
+            OrderListSerializer if self.action == "list" else OrderSerializer
         )
 
     def perform_create(self, serializer):

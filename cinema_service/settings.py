@@ -45,7 +45,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-# Adiciona Debug Toolbar apenas em DEBUG e se instalado (sem importar o módulo)
+# Adiciona Debug Toolbar apenas em DEBUG, se instalado (sem importar o módulo)
 if DEBUG:
     try:
         import importlib.util as _importlib_util
